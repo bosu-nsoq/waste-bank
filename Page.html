@@ -1079,12 +1079,10 @@
         <div class="modal-body text-center pt-0">
           <img src="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png" width="70" height="70" class="rounded-circle shadow-sm mb-2" alt="Waste Bank">
           <h4 class="fw-bold mb-1">เข้าสู่ระบบ Admin</h4>
-          <p class="text-muted small mb-3">กรุณาระบุรหัส PIN ผู้ดูแล 4 หลัก</p>
+          <p class="text-muted small mb-3">กรุณาระบุรหัส PIN ผู้ดูแล 4 หลัก (จากฐานข้อมูล)</p>
 
-          <input type="password" id="modal-admin-pin" class="form-control text-center fs-2 fw-bold text-success mb-2" 
+          <input type="password" id="modal-admin-pin" class="form-control text-center fs-2 fw-bold text-success mb-3" 
                  maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="****" oninput="checkModalPinAuto(this.value)">
-
-          <div class="small text-muted mb-3">รหัสเริ่มต้น: <strong>8055</strong></div>
 
           <!-- Numpad inside modal for fast finger entry -->
           <div class="numpad-grid" style="max-width: 280px;">
@@ -1111,19 +1109,32 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content glass-card border-0">
         <div class="modal-header border-0">
-          <h5 class="modal-title fw-bold">⚙️ ตั้งค่าเชื่อมต่อ Google Apps Script</h5>
+          <h5 class="modal-title fw-bold">⚙️ จัดการการตั้งค่า API Google Apps Script</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <label class="form-label small text-muted">Web App URL ของ Google Apps Script (Deploy as Anyone):</label>
-          <input type="url" id="setting-gas-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
-          <div class="form-text small mt-2">
-            URL ปัจจุบันจะถูกบันทึกลงในหน่วยความจำของเครื่อง (LocalStorage)
+          <label class="form-label small text-muted fw-bold">Web App URL (Deploy as Anyone):</label>
+          <div class="input-group mb-2">
+            <input type="url" id="setting-gas-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+            <button class="btn btn-outline-secondary" type="button" onclick="resetDefaultGasUrl()" title="คืนค่าเริ่มต้น">🔄 เริ่มต้น</button>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-sm btn-eco-secondary w-100" onclick="testGasConnection()">
+              🧪 ทดสอบการเชื่อมต่อ (Test API)
+            </button>
+          </div>
+          <div id="api-test-result" class="d-none alert py-2 px-3 small rounded-3 mb-2"></div>
+          <div class="form-text small" style="line-height: 1.5;">
+            💡 <strong>คำแนะนำ:</strong> ใน Google Apps Script เมนู <em>Deploy</em> &rarr; <em>Manage deployments</em> ต้องตั้งค่า:
+            <ul class="mb-0 ps-3 mt-1">
+              <li><strong>Execute as:</strong> Me (ฉัน)</li>
+              <li><strong>Who has access:</strong> Anyone (ทุกคน)</li>
+            </ul>
           </div>
         </div>
         <div class="modal-footer border-0">
-          <button class="btn btn-eco-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-          <button class="btn btn-eco-primary" onclick="saveGasUrlConfig()">บันทึก</button>
+          <button class="btn btn-eco-secondary" data-bs-dismiss="modal">ปิด</button>
+          <button class="btn btn-eco-primary" onclick="saveGasUrlConfig()">💾 บันทึกการตั้งค่า</button>
         </div>
       </div>
     </div>
@@ -1147,7 +1158,7 @@
     // ==============================================================
     // CONFIGURATION & DUAL-BRIDGE POLYFILL
     // ==============================================================
-    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbx1hGkMxHeiVhwPbuXtXj-mGWRKurH9Mb19BC3YdP2ktK7yrSS_skWKjfoQb8Th-wrn/exec";
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwgiac6_XN2e0bQe5tyoq68yT_yHTQf-1hp3DnWEYyFGsm4t07_kWvC4hId3UH4HQwm/exec";
     let activeGasUrl = localStorage.getItem('wastebank_gas_url') || DEFAULT_GAS_URL;
 
     // Bridge Polyfill: รองรับทั้งบน Google Apps Script (`google.script.run`) และ GitHub Pages
@@ -1158,22 +1169,52 @@
             if (actionName === 'withSuccessHandler') return (cb) => createBridgeRunner(cb, failureCb);
             if (actionName === 'withFailureHandler') return (cb) => createBridgeRunner(successCb, cb);
             return function(...args) {
-              fetch(activeGasUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: actionName, args: args })
-              })
-              .then(res => res.json())
-              .then(data => {
-                if (successCb) successCb(data);
-              })
-              .catch(err => {
-                console.error('API Error:', err);
-                if (failureCb) failureCb(err);
-                else {
-                  showToast('error', 'เชื่อมต่อระบบไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต');
-                }
-              });
+              const url = activeGasUrl;
+              if (!url) {
+                hideSpinner();
+                if (failureCb) failureCb(new Error("ยังไม่ได้ระบุ Web App URL"));
+                return;
+              }
+
+              // 1. เรียกผ่าน GET (URL + action + args) รองรับ 302 redirect อัตโนมัติบนทุกเบราว์เซอร์
+              const encodedArgs = encodeURIComponent(JSON.stringify(args));
+              const getUrl = `${url}${url.includes('?') ? '&' : '?'}action=${encodeURIComponent(actionName)}&args=${encodedArgs}`;
+
+              fetch(getUrl)
+                .then(res => {
+                  if (!res.ok) throw new Error("HTTP " + res.status);
+                  return res.json();
+                })
+                .then(data => {
+                  if (data && data.error && !data.status) {
+                    if (failureCb) failureCb(new Error(data.error));
+                  } else {
+                    if (successCb) successCb(data);
+                  }
+                })
+                .catch(err => {
+                  // 2. หาก GET ไม่สำเร็จ ให้ลองเรียกผ่าน POST
+                  fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: actionName, args: args })
+                  })
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data && data.error && !data.status) {
+                      if (failureCb) failureCb(new Error(data.error));
+                    } else {
+                      if (successCb) successCb(data);
+                    }
+                  })
+                  .catch(postErr => {
+                    console.error('API Error:', postErr);
+                    if (failureCb) failureCb(postErr);
+                    else {
+                      showToast('error', 'เชื่อมต่อระบบไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า API');
+                    }
+                  });
+                });
             };
           }
         });
@@ -1397,7 +1438,7 @@
             Swal.fire({
               icon: 'error',
               title: 'รหัส PIN ไม่ถูกต้อง',
-              text: 'กรุณาตรวจสอบรหัส PIN อีกครั้ง (รหัสเริ่มต้น: 8055)',
+              text: 'กรุณาตรวจสอบรหัส PIN จากฐานข้อมูลชีต Settings อีกครั้ง',
               confirmButtonColor: '#2D6A4F'
             });
             document.getElementById('modal-admin-pin').value = '';
@@ -2146,8 +2187,49 @@
 
     function openGasConfigModal() {
       document.getElementById('setting-gas-url').value = activeGasUrl;
+      const resBox = document.getElementById('api-test-result');
+      if (resBox) resBox.className = 'd-none';
       const modal = new bootstrap.Modal(document.getElementById('gasConfigModal'));
       modal.show();
+    }
+
+    function resetDefaultGasUrl() {
+      document.getElementById('setting-gas-url').value = DEFAULT_GAS_URL;
+      showToast('info', 'ใส่ค่าเริ่มต้นเรียบร้อยแล้ว กรุณากดบันทึก');
+    }
+
+    function testGasConnection() {
+      const url = document.getElementById('setting-gas-url').value.trim();
+      const resBox = document.getElementById('api-test-result');
+      if (!url) {
+        showToast('warning', 'กรุณาระบุ URL ก่อนทดสอบ');
+        return;
+      }
+      resBox.className = 'alert alert-info py-2 px-3 small rounded-3 mb-2';
+      resBox.innerText = '⏳ กำลังทดสอบการเชื่อมต่อ...';
+
+      const testUrl = `${url}${url.includes('?') ? '&' : '?'}action=getPrices&args=%5B%5D`;
+      fetch(testUrl)
+        .then(res => {
+          if (!res.ok) throw new Error("HTTP Status " + res.status);
+          return res.json();
+        })
+        .then(data => {
+          if (Array.isArray(data)) {
+            resBox.className = 'alert alert-success py-2 px-3 small rounded-3 mb-2';
+            resBox.innerHTML = `✅ <strong>เชื่อมต่อสำเร็จ!</strong> พบข้อมูลราคารับฝาก ${data.length} รายการ`;
+          } else if (data && data.error) {
+            resBox.className = 'alert alert-warning py-2 px-3 small rounded-3 mb-2';
+            resBox.innerHTML = `⚠️ <strong>ตอบกลับแล้ว:</strong> ${data.error}`;
+          } else {
+            resBox.className = 'alert alert-success py-2 px-3 small rounded-3 mb-2';
+            resBox.innerHTML = `✅ <strong>เชื่อมต่อ API สำเร็จเรียบร้อย!</strong>`;
+          }
+        })
+        .catch(err => {
+          resBox.className = 'alert alert-danger py-2 px-3 small rounded-3 mb-2';
+          resBox.innerHTML = `❌ <strong>เชื่อมต่อไม่สำเร็จ:</strong> ${err.message}<br><small>กรุณาตรวจสอบว่าใน Google Apps Script ได้ตั้งค่า "ผู้มีสิทธิ์เข้าถึง: ทุกคน (Anyone)" แล้วหรือไม่</small>`;
+        });
     }
 
     function saveGasUrlConfig() {

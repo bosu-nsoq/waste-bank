@@ -2,10 +2,46 @@
  * ระบบธนาคารขยะ (Waste Bank) - Backend Script
  * พัฒนาสำหรับ Google Apps Script & รองรับเชื่อมต่อ GitHub Pages
  * Script ID: 1p7TBhgvIctwB854mT3PJLdmR_Q54a20mGxYa3o7jqVkP5stFYxAZHqD1
- * รหัส PIN ผู้ดูแลระบบเริ่มต้น: 8055
  */
 
+// 🌐 1. รองรับการเรียกแบบ Web API (GET) จากหน้าเว็บ GitHub Pages และเปิดตรงบน GAS
 function doGet(e) {
+  // 1.1 ตรวจสอบว่าเป็นการเรียก API ผ่าน GET หรือไม่
+  if (e && e.parameter && e.parameter.action) {
+    try {
+      var action = e.parameter.action;
+      var args = [];
+      if (e.parameter.args) {
+        try {
+          args = JSON.parse(e.parameter.args);
+        } catch (ex) {
+          args = [e.parameter.args];
+        }
+      }
+      
+      var fn = (typeof globalThis !== 'undefined' && typeof globalThis[action] === 'function') 
+               ? globalThis[action] 
+               : (typeof this[action] === 'function' ? this[action] : null);
+
+      if (!fn) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          status: "error",
+          error: "ไม่พบฟังก์ชัน: " + action 
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      var result = fn.apply(null, args);
+      return ContentService.createTextOutput(JSON.stringify(result !== undefined ? result : { status: "success" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        status: "error", 
+        error: err.toString() 
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  // 1.2 โหมดเปิดเว็บแอปโดยตรงบน Google Apps Script
   return HtmlService.createTemplateFromFile('Page')
     .evaluate()
     .setTitle('Waste bank - ระบบธนาคารขยะ')
@@ -14,7 +50,7 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// 🌐 Web API Endpoint สำหรับรองรับการเรียกจากภายนอก (GitHub Pages)
+// 🌐 2. Web API Endpoint สำหรับรองรับการเรียกแบบ POST
 function doPost(e) {
   try {
     var contents = (e && e.postData && e.postData.contents) ? e.postData.contents : "{}";
@@ -39,7 +75,7 @@ function doPost(e) {
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ 
       status: "error", 
-      message: err.toString() 
+      error: err.toString() 
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
@@ -90,16 +126,11 @@ function initSheetsIfNeeded() {
 }
 
 // -------------------------------------------------------------
-// 1. ตรวจสอบ PIN Admin (รองรับ PIN 8055 เป็น Master PIN เสมอ)
+// 1. ตรวจสอบ PIN Admin (ยึดรหัสจาก Google Sheets ในแท็บ Settings เท่านั้น)
 // -------------------------------------------------------------
 function checkAdminPin(inputPin) {
   if (!inputPin) return { valid: false, name: '' };
   const pinStr = inputPin.toString().trim();
-
-  // ตรวจสอบ Master PIN 8055
-  if (pinStr === '8055') {
-    return { valid: true, name: 'ผู้ดูแลระบบ (Admin)' };
-  }
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -109,9 +140,13 @@ function checkAdminPin(inputPin) {
       sheet = ss.getSheetByName('Settings');
     }
     const data = sheet.getDataRange().getValues();
+    // ค้นหาในชีต Settings (เริ่มจากแถว 2)
     for (let i = 1; i < data.length; i++) {
       if (data[i][0] && data[i][0].toString().trim() === pinStr) {
-        return { valid: true, name: data[i][1] ? data[i][1].toString() : 'เจ้าหน้าที่' };
+        return { 
+          valid: true, 
+          name: data[i][1] ? data[i][1].toString().trim() : 'เจ้าหน้าที่' 
+        };
       }
     }
   } catch (e) {
@@ -345,8 +380,6 @@ function getStatistics() {
     
     const data = sheet.getDataRange().getValues();
     let stats = {};
-    let totalItems = 0;
-    let totalPoints = 0;
     
     for (let i = 1; i < data.length; i++) {
       if (data[i][5] === 'ฝาก') {
@@ -356,8 +389,6 @@ function getStatistics() {
         if (!stats[mat]) stats[mat] = { weight: 0, points: 0 };
         stats[mat].weight += weight;
         stats[mat].points += points;
-        totalItems += weight;
-        totalPoints += points;
       }
     }
     
@@ -425,7 +456,7 @@ function parseDateInput(val) {
     let dt = new Date(val);
     return isNaN(dt.getTime()) ? null : dt;
   }
-  if (y > 2400) y -= 543; // แปลง พ.ศ. กลับเป็น ค.ศ. สำหรับเปรียบเทียบในระบบ
+  if (y > 2400) y -= 543;
   return new Date(y, m, d);
 }
 
@@ -467,7 +498,7 @@ function getReport(startDate, endDate) {
         });
       }
     }
-    return report.reverse(); // เรียงจากล่าสุดไปเก่าสุด
+    return report.reverse();
   } catch (e) {
     console.error('getReport error:', e);
     return [];
@@ -475,7 +506,7 @@ function getReport(startDate, endDate) {
 }
 
 // -------------------------------------------------------------
-// 8. ดึงข้อมูลภาพรวมระบบในครั้งเดียว (เร็วขึ้น ไม่ต้องเรียกหลายรอบ)
+// 8. ดึงข้อมูลภาพรวมระบบในครั้งเดียว (เร็วขึ้น)
 // -------------------------------------------------------------
 function getSystemOverview() {
   return {
