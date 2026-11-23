@@ -184,47 +184,104 @@
       transition: all 0.3s ease;
     }
 
-    /* Nav Tabs Styling */
-    .modern-tabs {
-      display: flex;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 5px;
-      gap: 5px;
+    /* Menu Bar & Popup Menu Styling */
+    .menu-bar-box {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      padding: 10px 16px;
       margin-bottom: 20px;
-      overflow-x: auto;
     }
 
-    .modern-tab-btn {
-      flex: 1;
-      min-width: 100px;
-      padding: 10px 14px;
+    .btn-main-menu {
+      background: linear-gradient(135deg, #2D6A4F, #1B4332);
+      color: #fff;
       border: none;
-      background: transparent;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 14px;
-      color: #4b5563;
-      cursor: pointer;
+      border-radius: 25px;
+      padding: 8px 18px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);
       transition: all 0.25s ease;
-      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .btn-main-menu:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(45, 106, 79, 0.4);
+      color: #fff;
+    }
+
+    .menu-popup-item {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1.5px solid var(--glass-border);
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+      text-align: left;
+      width: 100%;
     }
-
-    .modern-tab-btn:hover {
-      background: rgba(255, 255, 255, 0.6);
+    .menu-popup-item:hover {
+      background: #ffffff;
+      border-color: var(--primary-light);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.12);
       color: var(--primary);
     }
-
-    .modern-tab-btn.active {
+    .menu-popup-item.active {
       background: var(--primary);
-      color: white;
-      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.35);
+      color: #ffffff !important;
+      border-color: var(--primary-dark);
+      box-shadow: 0 4px 14px rgba(45, 106, 79, 0.3);
+    }
+    .menu-popup-item.active .menu-popup-title,
+    .menu-popup-item.active .menu-popup-desc,
+    .menu-popup-item.active .menu-popup-arrow {
+      color: #ffffff !important;
+    }
+    .menu-popup-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .menu-popup-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .menu-popup-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0;
+      color: var(--primary-dark);
+    }
+    .menu-popup-desc {
+      font-size: 11.5px;
+      color: #6b7280;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .menu-popup-arrow {
+      font-size: 18px;
+      color: #9ca3af;
     }
 
     /* Form Controls */
@@ -593,30 +650,20 @@
   <!-- Main Container -->
   <main class="container my-3" style="max-width: 900px;">
 
-    <!-- Navigation Tabs (Dynamic for Guest / Admin) -->
-    <div class="modern-tabs no-print" id="app-nav-tabs">
-      <button class="modern-tab-btn active" id="tab-home" onclick="switchSection('home')">
-        🏠 หน้าหลัก
-      </button>
-      <button class="modern-tab-btn" id="tab-passbook" onclick="switchSection('passbook')">
-        🔍 ตรวจสอบคะแนน
-      </button>
-      <button class="modern-tab-btn" id="tab-prices" onclick="switchSection('prices')">
-        📋 ราคารับฝาก
-      </button>
-      <button class="modern-tab-btn" id="tab-stats" onclick="switchSection('stats')">
-        📊 สถิติ & อันดับ
-      </button>
-      <!-- Admin Specific Tabs (Hidden in Guest mode) -->
-      <button class="modern-tab-btn d-none" id="tab-deposit" onclick="switchSection('deposit')">
-        ♻️ ฝากขยะ
-      </button>
-      <button class="modern-tab-btn d-none" id="tab-withdraw" onclick="switchSection('withdraw')">
-        💰 แลกคะแนน
-      </button>
-      <button class="modern-tab-btn d-none" id="tab-report" onclick="switchSection('report')">
-        🖨️ รายงาน
-      </button>
+    <!-- Menu Bar with "เมนู" button -->
+    <div class="menu-bar-container no-print">
+      <div class="menu-bar-box d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <span class="fs-4" id="current-section-icon">🏠</span>
+          <div>
+            <div class="text-muted" style="font-size: 11px; line-height: 1;">เมนูปัจจุบัน</div>
+            <div class="fw-bold text-success fs-6" id="current-section-title">หน้าหลัก</div>
+          </div>
+        </div>
+        <button class="btn-main-menu shadow-sm" onclick="openNavMenuModal()" title="คลิกเพื่อเลือกเมนู">
+          <span>☰</span> <span>เมนู</span>
+        </button>
+      </div>
     </div>
 
     <!-- ========================================== -->
@@ -1068,7 +1115,94 @@
   </main>
 
   <!-- ========================================== -->
-  <!-- MODAL: ADMIN LOGIN (PIN 4 หลัก = 8055) -->
+  <!-- MODAL: NAVIGATION POPUP MENU (ป๊อปอัพเมนู) -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="navMenuPopupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 420px;">
+      <div class="modal-content glass-card p-3 border-0">
+        <div class="modal-header border-0 pb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fs-4">📋</span>
+            <h5 class="modal-title fw-bold text-success mb-0">เมนูระบบธนาคารขยะ</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-1 pt-2">
+          <!-- General Menus -->
+          <div class="small fw-bold text-muted px-2 mb-2">📌 เมนูทั่วไป</div>
+          <button class="menu-popup-item active" id="tab-home" onclick="selectNavMenuItem('home')">
+            <span class="menu-popup-icon">🏠</span>
+            <div class="menu-popup-text">
+              <div class="menu-popup-title">หน้าหลัก</div>
+              <div class="menu-popup-desc">กลับสู่หน้าแดชบอร์ดหลัก</div>
+            </div>
+            <span class="menu-popup-arrow">›</span>
+          </button>
+
+          <button class="menu-popup-item" id="tab-passbook" onclick="selectNavMenuItem('passbook')">
+            <span class="menu-popup-icon">🔍</span>
+            <div class="menu-popup-text">
+              <div class="menu-popup-title">ตรวจสอบคะแนน</div>
+              <div class="menu-popup-desc">ค้นหาสมุดบัญชีและประวัตินักเรียน</div>
+            </div>
+            <span class="menu-popup-arrow">›</span>
+          </button>
+
+          <button class="menu-popup-item" id="tab-prices" onclick="selectNavMenuItem('prices')">
+            <span class="menu-popup-icon">📋</span>
+            <div class="menu-popup-text">
+              <div class="menu-popup-title">ราคารับฝากขยะ</div>
+              <div class="menu-popup-desc">อัตราคะแนนรับซื้อขยะแต่ละประเภท</div>
+            </div>
+            <span class="menu-popup-arrow">›</span>
+          </button>
+
+          <button class="menu-popup-item" id="tab-stats" onclick="selectNavMenuItem('stats')">
+            <span class="menu-popup-icon">📊</span>
+            <div class="menu-popup-text">
+              <div class="menu-popup-title">สถิติ & อันดับ</div>
+              <div class="menu-popup-desc">ยอดขยะยอดนิยม และอันดับเด็กดีรักษ์โลก</div>
+            </div>
+            <span class="menu-popup-arrow">›</span>
+          </button>
+
+          <!-- Admin Only Menus -->
+          <div class="admin-only d-none mt-3">
+            <div class="small fw-bold text-danger px-2 mb-2">👑 สำหรับผู้ดูแลระบบ (Admin)</div>
+            <button class="menu-popup-item d-none" id="tab-deposit" onclick="selectNavMenuItem('deposit')" style="border-left: 4px solid #2D6A4F;">
+              <span class="menu-popup-icon">♻️</span>
+              <div class="menu-popup-text">
+                <div class="menu-popup-title text-success">ทำรายการฝากขยะ</div>
+                <div class="menu-popup-desc">ชั่งน้ำหนัก / บันทึกคะแนนเข้าบัญชีนักเรียน</div>
+              </div>
+              <span class="menu-popup-arrow">›</span>
+            </button>
+
+            <button class="menu-popup-item d-none" id="tab-withdraw" onclick="selectNavMenuItem('withdraw')" style="border-left: 4px solid #E63946;">
+              <span class="menu-popup-icon">💰</span>
+              <div class="menu-popup-text">
+                <div class="menu-popup-title text-danger">ทำรายการแลกคะแนน</div>
+                <div class="menu-popup-desc">ตัดยอดคะแนนสะสมแลกของรางวัล</div>
+              </div>
+              <span class="menu-popup-arrow">›</span>
+            </button>
+
+            <button class="menu-popup-item d-none" id="tab-report" onclick="selectNavMenuItem('report')" style="border-left: 4px solid #0284C7;">
+              <span class="menu-popup-icon">🖨️</span>
+              <div class="menu-popup-text">
+                <div class="menu-popup-title text-primary">ดูรายงาน & สรุปยอด</div>
+                <div class="menu-popup-desc">ค้นหาประวัติย้อนหลัง และพิมพ์รายงาน A4</div>
+              </div>
+              <span class="menu-popup-arrow">›</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADMIN LOGIN -->
   <!-- ========================================== -->
   <div class="modal fade" id="adminAuthModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
@@ -1458,8 +1592,23 @@
     }
 
     // ==============================================================
-    // NAVIGATION & SECTIONS
+    // NAVIGATION & POPUP MENU
     // ==============================================================
+    let navMenuModalInstance = null;
+
+    function openNavMenuModal() {
+      const modalEl = document.getElementById('navMenuPopupModal');
+      if (!navMenuModalInstance) navMenuModalInstance = new bootstrap.Modal(modalEl);
+      navMenuModalInstance.show();
+    }
+
+    function selectNavMenuItem(sectionName) {
+      if (navMenuModalInstance) {
+        navMenuModalInstance.hide();
+      }
+      switchSection(sectionName);
+    }
+
     function switchSection(sectionName) {
       // Check auth if trying to access admin section
       if (['deposit', 'withdraw', 'report'].includes(sectionName) && !appState.isAdmin) {
@@ -1470,16 +1619,32 @@
       // Hide all sections
       document.querySelectorAll('.section-content').forEach(el => el.classList.add('d-none'));
 
-      // Remove active class from tabs
-      document.querySelectorAll('.modern-tab-btn').forEach(btn => btn.classList.remove('active'));
+      // Update header bar icon & title
+      const sectionInfo = {
+        'home': { icon: '🏠', title: 'หน้าหลัก' },
+        'passbook': { icon: '🔍', title: 'ตรวจสอบคะแนน' },
+        'prices': { icon: '📋', title: 'ราคารับฝากขยะ' },
+        'stats': { icon: '📊', title: 'สถิติ & อันดับ' },
+        'deposit': { icon: '♻️', title: 'ทำรายการฝากขยะ' },
+        'withdraw': { icon: '💰', title: 'ทำรายการแลกคะแนน' },
+        'report': { icon: '🖨️', title: 'ดูรายงาน & สรุปยอด' }
+      };
+
+      if (sectionInfo[sectionName]) {
+        const iconEl = document.getElementById('current-section-icon');
+        const titleEl = document.getElementById('current-section-title');
+        if (iconEl) iconEl.innerText = sectionInfo[sectionName].icon;
+        if (titleEl) titleEl.innerText = sectionInfo[sectionName].title;
+      }
+
+      // Highlight active menu item in popup
+      document.querySelectorAll('.menu-popup-item').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('tab-' + sectionName);
+      if (activeBtn) activeBtn.classList.add('active');
 
       // Show selected section
       const targetSec = document.getElementById('section-' + sectionName);
       if (targetSec) targetSec.classList.remove('d-none');
-
-      // Highlight tab
-      const targetTab = document.getElementById('tab-' + sectionName);
-      if (targetTab) targetTab.classList.add('active');
 
       // Specific section lazy load
       if (sectionName === 'prices') loadPrices();
