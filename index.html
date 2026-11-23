@@ -1159,7 +1159,12 @@
     // CONFIGURATION & DUAL-BRIDGE POLYFILL
     // ==============================================================
     const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwgiac6_XN2e0bQe5tyoq68yT_yHTQf-1hp3DnWEYyFGsm4t07_kWvC4hId3UH4HQwm/exec";
-    let activeGasUrl = localStorage.getItem('wastebank_gas_url') || DEFAULT_GAS_URL;
+    let storedUrl = localStorage.getItem('wastebank_gas_url');
+    if (storedUrl && !storedUrl.includes('AKfycbwgiac6_XN2e0bQe5tyoq68yT_yHTQf-1hp3DnWEYyFGsm4t07_kWvC4hId3UH4HQwm')) {
+      localStorage.removeItem('wastebank_gas_url');
+      storedUrl = null;
+    }
+    let activeGasUrl = storedUrl || DEFAULT_GAS_URL;
 
     // Bridge Polyfill: รองรับทั้งบน Google Apps Script (`google.script.run`) และ GitHub Pages
     if (typeof google === 'undefined' || !google.script || !google.script.run) {
