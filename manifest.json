@@ -1,0 +1,25 @@
+{
+  "name": "Waste bank - ระบบธนาคารขยะ",
+  "short_name": "Waste Bank",
+  "description": "ระบบธนาคารขยะ โรงเรียนวัดหนองตะเฆ่ สะสมแต้ม แลกของรางวัล และรักษ์สิ่งแวดล้อม",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1E5128",
+  "theme_color": "#2D6A4F",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/3wqjKXmy/Waste-Bank.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/3wqjKXmy/Waste-Bank.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

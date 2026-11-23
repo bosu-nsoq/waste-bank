@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Waste bank - ระบบธนาคารขยะ</title>
+  <meta name="description" content="ระบบธนาคารขยะ สะสมคะแนน แลกของรางวัล และร่วมรักษ์สิ่งแวดล้อม">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png">
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2D6A4F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Waste Bank">
+
+  <!-- CSS Frameworks & Google Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  
+  <style>
+    :root {
+      --primary: #2D6A4F;
+      --primary-dark: #1B4332;
+      --primary-light: #52B788;
+      --accent: #D8F3DC;
+      --gold: #FFB703;
+      --danger: #E63946;
+      --text-main: #1F2937;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Mali', 'Prompt', sans-serif;
+      background-image: url('https://i.postimg.cc/ydMG9Ff6/thnakhar-khya.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      margin: 0;
+      padding-bottom: 40px;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(230, 245, 235, 0.45) 100%);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: -1;
+    }
+
+    /* Header Nav */
+    .app-header {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 10px 15px;
+    }
+
+    .header-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      border: 2px solid #fff;
+      flex-shrink: 0;
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .brand-subtitle {
+      font-size: 0.78rem;
+      color: #555;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    /* Responsive User Display & Invariants */
+    .user-pill {
+      background: var(--accent);
+      color: var(--primary);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    #staff-display, #user-name-display {
+      white-space: nowrap;
+      font-size: 13px;
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    @media (max-width: 480px) {
+      .app-header {
+        padding: 8px 10px;
+      }
+      .brand-title {
+        font-size: 1.05rem;
+      }
+      .brand-subtitle {
+        display: none;
+      }
+      .brand-logo {
+        width: 36px;
+        height: 36px;
+      }
+      .user-pill, #staff-display, #user-name-display {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 125px;
+        font-size: 11.5px;
+        padding: 4px 8px;
+      }
+      .btn-header {
+        font-size: 11.5px !important;
+        padding: 4px 9px !important;
+      }
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      box-shadow: var(--glass-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    /* Nav Tabs Styling */
+    .modern-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 5px;
+      gap: 5px;
+      border: 1px solid var(--glass-border);
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .modern-tab-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 14px;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #4b5563;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .modern-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--primary);
+    }
+
+    .modern-tab-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.35);
+    }
+
+    /* Form Controls */
+    .form-control, .form-select {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid #d1d5db;
+      border-radius: 14px;
+      color: #111827;
+      font-weight: 500;
+      padding: 12px 14px;
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background: #ffffff;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.25);
+    }
+
+    /* Interactive Colorful Buttons */
+    .btn-eco-primary {
+      background: linear-gradient(135deg, #2D6A4F, #1B4332);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 12px 20px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(45, 106, 79, 0.3);
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-eco-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(45, 106, 79, 0.4);
+      color: #fff;
+    }
+
+    .btn-eco-danger {
+      background: linear-gradient(135deg, #E63946, #C1121F);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 12px 20px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(230, 57, 70, 0.3);
+      transition: all 0.25s ease;
+    }
+    .btn-eco-danger:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(230, 57, 70, 0.4);
+      color: #fff;
+    }
+
+    .btn-eco-secondary {
+      background: rgba(255, 255, 255, 0.85);
+      color: #374151;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      padding: 10px 18px;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+    .btn-eco-secondary:hover {
+      background: #ffffff;
+      color: var(--primary);
+    }
+
+    /* Touch Numpad */
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 320px;
+      margin: 15px auto 5px;
+    }
+
+    .numpad-btn {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      padding: 14px 0;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .numpad-btn:active {
+      transform: scale(0.95);
+      background: var(--accent);
+    }
+
+    .numpad-btn.btn-clear {
+      color: var(--danger);
+      font-size: 1.1rem;
+    }
+
+    .numpad-btn.btn-ok {
+      background: var(--primary);
+      color: white;
+      font-size: 1.1rem;
+    }
+
+    /* Menu Cards */
+    .menu-card {
+      background: rgba(255, 255, 255, 0.82);
+      border-radius: 20px;
+      padding: 22px 15px;
+      text-align: center;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      background: #fff;
+    }
+
+    .menu-icon {
+      font-size: 2.3rem;
+      line-height: 1;
+    }
+
+    .menu-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 0;
+    }
+
+    .menu-desc {
+      font-size: 0.82rem;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    /* Balance Hero Display */
+    .balance-card {
+      background: linear-gradient(135deg, #1B4332, #2D6A4F);
+      color: white;
+      border-radius: 22px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 10px 28px rgba(27, 67, 50, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .balance-num {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #95D5B2;
+      line-height: 1.1;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Quick Amount Pills */
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pill-btn:hover {
+      background: var(--accent);
+      color: var(--primary);
+    }
+
+    /* Date Picker Overlay Pattern (Rule 2) */
+    .date-input-container {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .date-display-box {
+      width: 100%;
+      background: #ffffff;
+      border: 1.5px solid #d1d5db;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--primary-dark);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .date-display-box:hover {
+      border-color: var(--primary-light);
+      background: #f9fafb;
+    }
+
+    .date-raw-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .date-raw-input::-webkit-calendar-picker-indicator {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* Tables */
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: transparent;
+    }
+
+    .custom-table th {
+      background: rgba(82, 183, 136, 0.2);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 13.5px;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--primary-light);
+    }
+
+    .custom-table td {
+      background: rgba(255, 255, 255, 0.6);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      vertical-align: middle;
+    }
+
+    .custom-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Sarabun Print View Standards (Rule 4) */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Sarabun', sans-serif !important;
+        padding: 0 !important;
+      }
+      .bg-overlay, .app-header, .modern-tabs, .no-print, .btn, .swal2-container {
+        display: none !important;
+      }
+      .glass-card {
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+      .custom-table th {
+        background: #f3f4f6 !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+      }
+      .custom-table td {
+        background: #ffffff !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+      }
+    }
+
+    /* Loader Modal */
+    #global-spinner {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 99999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .pulse-logo {
+      animation: heartBeat 1.8s infinite;
+    }
+    @keyframes heartBeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.08); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.08); }
+      70% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-overlay"></div>
+
+  <!-- Global Loading Spinner -->
+  <div id="global-spinner">
+    <img src="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png" width="70" height="70" class="pulse-logo mb-3" alt="Logo">
+    <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;"></div>
+    <div class="mt-3 fw-bold fs-5 text-white" id="spinner-text">กำลังประมวลผล...</div>
+  </div>
+
+  <!-- Header Bar (Responsive & Single line on mobile portrait) -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group" onclick="switchSection('home')">
+        <img src="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png" alt="Waste Bank" class="brand-logo">
+        <div>
+          <h1 class="brand-title">Waste bank</h1>
+          <p class="brand-subtitle">ระบบธนาคารขยะ โรงเรียนวัดหนองตะเฆ่</p>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <!-- Status Pill -->
+        <div id="user-badge-container">
+          <div class="user-pill">
+            <span id="role-dot" style="font-size: 10px;">🟢</span>
+            <span id="user-name-display">ผู้ใช้งานทั่วไป (Guest)</span>
+          </div>
+        </div>
+
+        <!-- Action Button in Header -->
+        <button id="btn-header-auth" class="btn btn-sm btn-eco-primary btn-header" onclick="toggleAuthModal()">
+          🔐 เข้าสู่ระบบ Admin
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container my-3" style="max-width: 900px;">
+
+    <!-- Navigation Tabs (Dynamic for Guest / Admin) -->
+    <div class="modern-tabs no-print" id="app-nav-tabs">
+      <button class="modern-tab-btn active" id="tab-home" onclick="switchSection('home')">
+        🏠 หน้าหลัก
+      </button>
+      <button class="modern-tab-btn" id="tab-passbook" onclick="switchSection('passbook')">
+        🔍 ตรวจสอบคะแนน
+      </button>
+      <button class="modern-tab-btn" id="tab-prices" onclick="switchSection('prices')">
+        📋 ราคารับฝาก
+      </button>
+      <button class="modern-tab-btn" id="tab-stats" onclick="switchSection('stats')">
+        📊 สถิติ & อันดับ
+      </button>
+      <!-- Admin Specific Tabs (Hidden in Guest mode) -->
+      <button class="modern-tab-btn d-none" id="tab-deposit" onclick="switchSection('deposit')">
+        ♻️ ฝากขยะ
+      </button>
+      <button class="modern-tab-btn d-none" id="tab-withdraw" onclick="switchSection('withdraw')">
+        💰 แลกคะแนน
+      </button>
+      <button class="modern-tab-btn d-none" id="tab-report" onclick="switchSection('report')">
+        🖨️ รายงาน
+      </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 1: HOME DASHBOARD (หน้าหลัก) -->
+    <!-- ========================================== -->
+    <div id="section-home" class="section-content">
+      <!-- Welcome Hero Banner -->
+      <div class="glass-card text-center position-relative overflow-hidden mb-4">
+        <img src="https://i.postimg.cc/mDdv8xpQ/tra-rong-re-yn.png" width="80" height="80" class="mb-2 rounded-circle shadow-sm" alt="School Badge">
+        <h2 class="fw-bold text-success mb-1">ยินดีต้อนรับสู่ ธนาคารขยะ</h2>
+        <p class="text-muted mb-3">เปลี่ยนขยะรีไซเคิลเป็นคะแนนสะสม แลกของรางวัล และร่วมอนุรักษ์สิ่งแวดล้อม</p>
+        
+        <div id="home-admin-notice" class="alert alert-success d-none py-2 px-3 d-inline-block rounded-pill">
+          👑 ท่านกำลังเข้าใช้งานในโหมด <strong>ผู้ดูแลระบบ (Admin)</strong> สามารถทำรายการฝาก-แลกคะแนนได้
+        </div>
+      </div>
+
+      <!-- Quick Action Grid -->
+      <div class="row g-3">
+        <!-- Guest Quick Actions -->
+        <div class="col-6 col-md-4">
+          <div class="menu-card" onclick="switchSection('passbook')">
+            <div class="menu-icon">🔍</div>
+            <h3 class="menu-title">ตรวจคะแนน</h3>
+            <p class="menu-desc">ค้นหาสมุดบัญชีนักเรียน</p>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-4">
+          <div class="menu-card" onclick="switchSection('prices')">
+            <div class="menu-icon">♻️</div>
+            <h3 class="menu-title">ราคารับฝาก</h3>
+            <p class="menu-desc">อัตราคะแนนขยะแต่ละชนิด</p>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-4">
+          <div class="menu-card" onclick="switchSection('stats')">
+            <div class="menu-icon">📊</div>
+            <h3 class="menu-title">สถิติ & อันดับ</h3>
+            <p class="menu-desc">ยอดขยะและเด็กดีรักษ์โลก</p>
+          </div>
+        </div>
+
+        <!-- Admin Quick Actions (Dynamic) -->
+        <div class="col-6 col-md-6 admin-only d-none">
+          <div class="menu-card" style="border: 2px solid #52B788;" onclick="switchSection('deposit')">
+            <div class="menu-icon">📥</div>
+            <h3 class="menu-title text-success">ทำรายการฝากขยะ</h3>
+            <p class="menu-desc">ชั่งน้ำหนัก / บันทึกคะแนน</p>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-6 admin-only d-none">
+          <div class="menu-card" style="border: 2px solid #E63946;" onclick="switchSection('withdraw')">
+            <div class="menu-icon">🎁</div>
+            <h3 class="menu-title text-danger">แลกคะแนนรางวัล</h3>
+            <p class="menu-desc">ตัดยอดคะแนนสะสม</p>
+          </div>
+        </div>
+
+        <div class="col-12 admin-only d-none">
+          <div class="menu-card" onclick="switchSection('report')">
+            <div class="menu-icon">🖨️</div>
+            <h3 class="menu-title">ดูรายงาน & สรุปยอด</h3>
+            <p class="menu-desc">ค้นหาประวัติย้อนหลัง พิมพ์รายงานขนาด A4</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: PASSBOOK LOOKUP (สมุดบัญชีนักเรียน) -->
+    <!-- ========================================== -->
+    <div id="section-passbook" class="section-content d-none">
+      <div class="glass-card">
+        <h4 class="fw-bold mb-3 text-success">🔍 ตรวจสอบคะแนนสะสมนักเรียน</h4>
+        <p class="text-muted small">กรอกรหัสนักเรียน 4 หลัก เพื่อดูยอดคะแนนสะสมและประวัติการทำรายการ</p>
+
+        <div class="row g-2 align-items-center mb-3">
+          <div class="col">
+            <input type="text" id="passbook-student-id" class="form-control text-center fs-3 fw-bold text-success" 
+                   maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="รหัส 4 หลัก" oninput="handlePassbookInput(this.value)">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-eco-primary" onclick="searchPassbook()">
+              🔍 ค้นหา
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Touch Numpad for convenience -->
+        <div class="text-center">
+          <button class="btn btn-sm btn-link text-decoration-none text-muted mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#numpad-collapse">
+            ⌨️ เปิด/ปิด แป้นตัวเลขสัมผัส
+          </button>
+          <div class="collapse" id="numpad-collapse">
+            <div class="numpad-grid">
+              <button class="numpad-btn" onclick="pressNumpad('1')">1</button>
+              <button class="numpad-btn" onclick="pressNumpad('2')">2</button>
+              <button class="numpad-btn" onclick="pressNumpad('3')">3</button>
+              <button class="numpad-btn" onclick="pressNumpad('4')">4</button>
+              <button class="numpad-btn" onclick="pressNumpad('5')">5</button>
+              <button class="numpad-btn" onclick="pressNumpad('6')">6</button>
+              <button class="numpad-btn" onclick="pressNumpad('7')">7</button>
+              <button class="numpad-btn" onclick="pressNumpad('8')">8</button>
+              <button class="numpad-btn" onclick="pressNumpad('9')">9</button>
+              <button class="numpad-btn btn-clear" onclick="pressNumpad('C')">ลบ</button>
+              <button class="numpad-btn" onclick="pressNumpad('0')">0</button>
+              <button class="numpad-btn btn-ok" onclick="pressNumpad('OK')">ตกลง</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Info Card Result -->
+        <div id="passbook-result" class="mt-4 d-none">
+          <div class="balance-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-light text-success fw-bold px-3 py-1 rounded-pill" id="passbook-badge-class">ชั้น -</span>
+              <span class="small opacity-75">รหัส: <strong id="passbook-badge-id">-</strong></span>
+            </div>
+            <h3 class="fw-bold mb-1" id="passbook-student-name">-</h3>
+            <div class="small opacity-75 mb-2">ยอดคะแนนสะสมคงเหลือ</div>
+            <div class="balance-num"><span id="passbook-balance">0</span> <span style="font-size: 1.4rem;">คะแนน</span></div>
+          </div>
+
+          <!-- Student History Table -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold mb-0">📜 ประวัติการทำรายการล่าสุด</h5>
+            <span class="badge bg-secondary" id="passbook-history-count">0 รายการ</span>
+          </div>
+
+          <div class="table-responsive rounded-3">
+            <table class="custom-table text-center">
+              <thead>
+                <tr>
+                  <th>วัน-เวลา</th>
+                  <th>รายการ</th>
+                  <th>วัสดุ/รายละเอียด</th>
+                  <th>จำนวน</th>
+                  <th>คะแนน</th>
+                </tr>
+              </thead>
+              <tbody id="passbook-history-body">
+                <tr><td colspan="5" class="py-3 text-muted">กำลังโหลดประวัติ...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: RECYCLABLE PRICES (ราคารับฝากขยะ) -->
+    <!-- ========================================== -->
+    <div id="section-prices" class="section-content d-none">
+      <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h4 class="fw-bold text-success mb-1">📋 อัตราคะแนนรับฝากขยะ</h4>
+            <p class="text-muted small mb-0">ตรวจสอบประเภทขยะและคะแนนที่จะได้รับ</p>
+          </div>
+          <button class="btn btn-sm btn-eco-secondary" onclick="loadPrices(true)">🔄 รีเฟรช</button>
+        </div>
+
+        <div class="row g-3" id="prices-grid">
+          <!-- Dynamic Cards via JS -->
+          <div class="col-12 text-center py-4 text-muted">กำลังโหลดรายการราคา...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 4: STATISTICS & LEADERBOARD (สถิติ) -->
+    <!-- ========================================== -->
+    <div id="section-stats" class="section-content d-none">
+      <div class="row g-3">
+        <!-- Top Recycled Waste -->
+        <div class="col-12 col-md-6">
+          <div class="glass-card h-100">
+            <h5 class="fw-bold text-success mb-3">📊 สถิติขยะยอดนิยม</h5>
+            <div id="stats-bars-container">
+              <div class="text-center py-4 text-muted">กำลังโหลดสถิติ...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Leaderboard -->
+        <div class="col-12 col-md-6">
+          <div class="glass-card h-100">
+            <h5 class="fw-bold text-warning mb-3">🏆 อันดับเด็กดีรักษ์โลก (Top Savers)</h5>
+            <div id="leaderboard-container">
+              <div class="text-center py-4 text-muted">กำลังโหลดอันดับ...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 5: ADMIN - DEPOSIT (ทำรายการฝากขยะ) -->
+    <!-- ========================================== -->
+    <div id="section-deposit" class="section-content d-none">
+      <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <h4 class="fw-bold text-success mb-0">♻️ บันทึกการฝากขยะ</h4>
+          <span class="badge bg-success-subtle text-success fw-bold px-3 py-1 rounded-pill">เจ้าหน้าที่: <span id="dep-admin-label">-</span></span>
+        </div>
+
+        <!-- Step 1: Student Lookup -->
+        <div class="p-3 mb-3 rounded-4" style="background: rgba(82, 183, 136, 0.12); border: 1px solid rgba(82, 183, 136, 0.3);">
+          <label class="fw-bold mb-1">รหัสนักเรียน (4 หลัก):</label>
+          <div class="row g-2">
+            <div class="col">
+              <input type="text" id="dep-student-id" class="form-control fw-bold text-primary fs-4 text-center" 
+                     maxlength="4" inputmode="numeric" placeholder="กรอกรหัส 4 หลัก" oninput="checkAutoLookup('dep')">
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-eco-primary" onclick="lookupStudent('dep')">ค้นหา</button>
+            </div>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-8">
+              <label class="small text-muted">ชื่อ-สกุล:</label>
+              <input type="text" id="dep-student-name" class="form-control" readonly placeholder="ข้อมูลชื่อนักเรียน">
+            </div>
+            <div class="col-4">
+              <label class="small text-muted">ชั้นเรียน:</label>
+              <input type="text" id="dep-student-class" class="form-control text-center" readonly placeholder="เช่น ป.4/1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Add Waste Items -->
+        <div class="p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.6); border: 1.5px dashed #52B788;">
+          <h6 class="fw-bold text-success mb-2">➕ เพิ่มรายการขยะ</h6>
+          <div class="row g-2">
+            <div class="col-12 col-md-5">
+              <label class="small text-muted">ประเภทวัสดุ:</label>
+              <select id="dep-material-select" class="form-select" onchange="updateDepositUnitPrice()"></select>
+            </div>
+            <div class="col-7 col-md-4">
+              <label class="small text-muted">จำนวน (ชิ้น/กก.):</label>
+              <input type="number" id="dep-weight-input" class="form-control fw-bold" step="0.5" min="0.1" placeholder="0">
+            </div>
+            <div class="col-5 col-md-3 d-flex align-items-end">
+              <button class="btn btn-eco-primary w-100" onclick="addItemToCart()">+ เพิ่มในบิล</button>
+            </div>
+          </div>
+          <div class="mt-1 small text-muted text-end">
+            อัตรา: <span id="dep-unit-price-label" class="fw-bold text-success">-</span> คะแนน/หน่วย
+          </div>
+        </div>
+
+        <!-- Step 3: Cart Table -->
+        <h6 class="fw-bold mb-2">🛒 รายการขยะในบิลนี้:</h6>
+        <div class="table-responsive rounded-3 mb-3">
+          <table class="custom-table text-center" id="cart-table">
+            <thead>
+              <tr>
+                <th>วัสดุ</th>
+                <th>จำนวน</th>
+                <th>คะแนน</th>
+                <th style="width: 50px;">ลบ</th>
+              </tr>
+            </thead>
+            <tbody id="cart-body">
+              <tr><td colspan="4" class="py-3 text-muted">ยังไม่มีรายการในบิล</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Total Summary & Submit -->
+        <div class="d-flex justify-content-between align-items-center p-3 rounded-3 mb-3" style="background: rgba(45, 106, 79, 0.1);">
+          <span class="fs-5 fw-bold">ยอดคะแนนรวมทั้งหมด:</span>
+          <span class="fs-3 fw-bold text-success"><span id="cart-total-points">0</span> คะแนน</span>
+        </div>
+
+        <button class="btn btn-eco-primary w-100 py-3 fs-5" id="btn-submit-dep" onclick="confirmSubmitDeposit()">
+          ✅ บันทึกและยืนยันการฝากขยะ
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 6: ADMIN - WITHDRAW (แลกคะแนน) -->
+    <!-- ========================================== -->
+    <div id="section-withdraw" class="section-content d-none">
+      <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <h4 class="fw-bold text-danger mb-0">💰 ทำรายการแลกคะแนน</h4>
+          <span class="badge bg-danger-subtle text-danger fw-bold px-3 py-1 rounded-pill">เจ้าหน้าที่: <span id="wit-admin-label">-</span></span>
+        </div>
+
+        <!-- Student Lookup -->
+        <div class="p-3 mb-3 rounded-4" style="background: rgba(230, 57, 70, 0.08); border: 1px solid rgba(230, 57, 70, 0.25);">
+          <label class="fw-bold mb-1">รหัสนักเรียน (4 หลัก):</label>
+          <div class="row g-2">
+            <div class="col">
+              <input type="text" id="wit-student-id" class="form-control fw-bold text-danger fs-4 text-center" 
+                     maxlength="4" inputmode="numeric" placeholder="กรอกรหัส 4 หลัก" oninput="checkAutoLookup('wit')">
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-eco-danger" onclick="lookupStudent('wit')">ค้นหา</button>
+            </div>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-8">
+              <label class="small text-muted">ชื่อ-สกุล:</label>
+              <input type="text" id="wit-student-name" class="form-control" readonly placeholder="ข้อมูลชื่อนักเรียน">
+            </div>
+            <div class="col-4">
+              <label class="small text-muted">ชั้นเรียน:</label>
+              <input type="text" id="wit-student-class" class="form-control text-center" readonly placeholder="ชั้นเรียน">
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Balance -->
+        <div class="text-center p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.06);">
+          <div class="text-muted small">คะแนนสะสมคงเหลือปัจจุบัน</div>
+          <div class="fs-1 fw-bold text-primary my-1" id="wit-balance-display">-</div>
+          <div class="small text-muted">คะแนน</div>
+        </div>
+
+        <!-- Redeem Amount Input -->
+        <div class="mb-4">
+          <label class="fw-bold mb-2">ระบุจำนวนคะแนนที่ต้องการแลก:</label>
+          <input type="number" id="wit-amount-input" class="form-control fs-2 text-center fw-bold text-danger" placeholder="0" min="1">
+          
+          <!-- Quick Amount Buttons -->
+          <div class="d-flex flex-wrap gap-2 justify-content-center mt-2">
+            <button class="pill-btn" onclick="setQuickWithdraw(10)">10</button>
+            <button class="pill-btn" onclick="setQuickWithdraw(20)">20</button>
+            <button class="pill-btn" onclick="setQuickWithdraw(50)">50</button>
+            <button class="pill-btn" onclick="setQuickWithdraw(100)">100</button>
+            <button class="pill-btn" onclick="setWithdrawAll()">แลกทั้งหมด</button>
+          </div>
+        </div>
+
+        <button class="btn btn-eco-danger w-100 py-3 fs-5" id="btn-submit-wit" onclick="confirmSubmitWithdraw()">
+          ✅ บันทึกและยืนยันการแลกคะแนน
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 7: ADMIN - REPORT & PRINT (รายงาน) -->
+    <!-- ========================================== -->
+    <div id="section-report" class="section-content d-none">
+      <div class="glass-card no-print">
+        <h4 class="fw-bold mb-3 text-primary">🖨️ ค้นหาประวัติ & ออกรายงาน</h4>
+
+        <!-- Date Range Filter following Rule 2 (Thai Date Pattern) -->
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="fw-bold small text-muted">ตั้งแต่วันที่:</label>
+            <div class="date-input-container">
+              <input type="text" id="report-start-display" class="date-display-box" readonly placeholder="วว/ดด/ปปปป พ.ศ." onclick="openNativeDatePicker('report-start-raw')">
+              <input type="date" id="report-start-raw" class="date-raw-input" onchange="onThaiDatePicked('report-start-raw', 'report-start-display')">
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="fw-bold small text-muted">ถึงวันที่:</label>
+            <div class="date-input-container">
+              <input type="text" id="report-end-display" class="date-display-box" readonly placeholder="วว/ดด/ปปปป พ.ศ." onclick="openNativeDatePicker('report-end-raw')">
+              <input type="date" id="report-end-raw" class="date-raw-input" onchange="onThaiDatePicked('report-end-raw', 'report-end-display')">
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Filter Buttons -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="pill-btn" onclick="setReportDateRange('today')">วันนี้</button>
+          <button class="pill-btn" onclick="setReportDateRange('this_week')">สัปดาห์นี้</button>
+          <button class="pill-btn" onclick="setReportDateRange('this_month')">เดือนนี้</button>
+          <button class="pill-btn" onclick="setReportDateRange('all')">ทั้งหมด</button>
+        </div>
+
+        <button class="btn btn-eco-primary w-100 py-2 fs-5" onclick="fetchReportData()">
+          🔍 ค้นหาและสร้างรายงาน
+        </button>
+      </div>
+
+      <!-- Report Print Layout Container -->
+      <div id="report-output-card" class="glass-card d-none" style="background: rgba(255, 255, 255, 0.98);">
+        <!-- Official Print Header -->
+        <div class="text-center mb-4">
+          <img src="https://i.postimg.cc/mDdv8xpQ/tra-rong-re-yn.png" width="70" height="70" class="mb-2" alt="Badge">
+          <h4 class="fw-bold mb-1" style="font-family: 'Sarabun', sans-serif;">รายงานสรุปรายการ ธนาคารขยะ</h4>
+          <h5 class="fw-semibold text-muted" style="font-family: 'Sarabun', sans-serif;">โรงเรียนวัดหนองตะเฆ่</h5>
+          <p id="report-period-text" class="small text-muted mb-0" style="font-family: 'Sarabun', sans-serif;">ประจำช่วงเวลา: -</p>
+        </div>
+
+        <!-- Summary Stat Pills -->
+        <div class="row g-2 text-center mb-3 no-print">
+          <div class="col-4">
+            <div class="p-2 rounded-3 bg-success-subtle text-success">
+              <div class="small">ยอดฝากรวม</div>
+              <strong id="rep-sum-deposit">0</strong> คะแนน
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 rounded-3 bg-danger-subtle text-danger">
+              <div class="small">ยอดแลกรวม</div>
+              <strong id="rep-sum-withdraw">0</strong> คะแนน
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+              <div class="small">คะแนนหมุนเวียนสุทธิ</div>
+              <strong id="rep-sum-net">0</strong> คะแนน
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Table (Sarabun font for official documents) -->
+        <div class="table-responsive">
+          <table class="custom-table text-center" style="font-family: 'Sarabun', sans-serif; font-size: 13px;">
+            <thead>
+              <tr>
+                <th>วัน-เวลา (พ.ศ.)</th>
+                <th>ผู้ทำรายการ</th>
+                <th>รหัส นร.</th>
+                <th>ชื่อ-สกุล (ชั้น)</th>
+                <th>รายการ</th>
+                <th>วัสดุ</th>
+                <th>จำนวน</th>
+                <th>คะแนน</th>
+              </tr>
+            </thead>
+            <tbody id="report-table-body">
+              <tr><td colspan="8" class="py-3 text-muted">ไม่มีข้อมูล</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Print Action Button -->
+        <div class="mt-4 no-print d-flex gap-2">
+          <button class="btn btn-eco-secondary flex-grow-1" onclick="window.print()">
+            🖨️ พิมพ์เอกสาร / บันทึกเป็น PDF (A4)
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADMIN LOGIN (PIN 4 หลัก = 8055) -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="adminAuthModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+      <div class="modal-content glass-card p-3 border-0">
+        <div class="modal-header border-0 pb-0 justify-content-end">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center pt-0">
+          <img src="https://i.postimg.cc/3wqjKXmy/Waste-Bank.png" width="70" height="70" class="rounded-circle shadow-sm mb-2" alt="Waste Bank">
+          <h4 class="fw-bold mb-1">เข้าสู่ระบบ Admin</h4>
+          <p class="text-muted small mb-3">กรุณาระบุรหัส PIN ผู้ดูแล 4 หลัก</p>
+
+          <input type="password" id="modal-admin-pin" class="form-control text-center fs-2 fw-bold text-success mb-2" 
+                 maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="****" oninput="checkModalPinAuto(this.value)">
+
+          <div class="small text-muted mb-3">รหัสเริ่มต้น: <strong>8055</strong></div>
+
+          <!-- Numpad inside modal for fast finger entry -->
+          <div class="numpad-grid" style="max-width: 280px;">
+            <button class="numpad-btn" onclick="pressModalNumpad('1')">1</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('2')">2</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('3')">3</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('4')">4</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('5')">5</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('6')">6</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('7')">7</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('8')">8</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('9')">9</button>
+            <button class="numpad-btn btn-clear" onclick="pressModalNumpad('C')">ลบ</button>
+            <button class="numpad-btn" onclick="pressModalNumpad('0')">0</button>
+            <button class="numpad-btn btn-ok" onclick="submitAdminLogin()">ยืนยัน</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal (GAS URL Configuration for GitHub Pages) -->
+  <div class="modal fade" id="gasConfigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-card border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold">⚙️ ตั้งค่าเชื่อมต่อ Google Apps Script</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label small text-muted">Web App URL ของ Google Apps Script (Deploy as Anyone):</label>
+          <input type="url" id="setting-gas-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+          <div class="form-text small mt-2">
+            URL ปัจจุบันจะถูกบันทึกลงในหน่วยความจำของเครื่อง (LocalStorage)
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-eco-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+          <button class="btn btn-eco-primary" onclick="saveGasUrlConfig()">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center mt-4 small text-muted no-print">
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-1">
+      <span>Waste bank - ระบบธนาคารขยะ</span>
+      <span>•</span>
+      <a href="javascript:void(0)" class="text-decoration-none text-muted" onclick="openGasConfigModal()">⚙️ ตั้งค่า API</a>
+    </div>
+    <div>โรงเรียนวัดหนองตะเฆ่ | Progressive Web App</div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    // ==============================================================
+    // CONFIGURATION & DUAL-BRIDGE POLYFILL
+    // ==============================================================
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbx1hGkMxHeiVhwPbuXtXj-mGWRKurH9Mb19BC3YdP2ktK7yrSS_skWKjfoQb8Th-wrn/exec";
+    let activeGasUrl = localStorage.getItem('wastebank_gas_url') || DEFAULT_GAS_URL;
+
+    // Bridge Polyfill: รองรับทั้งบน Google Apps Script (`google.script.run`) และ GitHub Pages
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      function createBridgeRunner(successCb, failureCb) {
+        return new Proxy({}, {
+          get: function(target, actionName) {
+            if (actionName === 'withSuccessHandler') return (cb) => createBridgeRunner(cb, failureCb);
+            if (actionName === 'withFailureHandler') return (cb) => createBridgeRunner(successCb, cb);
+            return function(...args) {
+              fetch(activeGasUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: actionName, args: args })
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (successCb) successCb(data);
+              })
+              .catch(err => {
+                console.error('API Error:', err);
+                if (failureCb) failureCb(err);
+                else {
+                  showToast('error', 'เชื่อมต่อระบบไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต');
+                }
+              });
+            };
+          }
+        });
+      }
+      window.google = { script: { run: createBridgeRunner() } };
+    }
+
+    // ==============================================================
+    // STATE & CACHING
+    // ==============================================================
+    let appState = {
+      isAdmin: false,
+      adminName: '',
+      prices: [],
+      currentCart: [],
+      studentCache: {},
+      selectedStudentDep: null,
+      selectedStudentWit: null
+    };
+
+    let audioCtx = null;
+
+    function playBeep(type = 'success') {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (type === 'success') {
+          osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.35);
+        } else {
+          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.2);
+        }
+      } catch (e) {}
+    }
+
+    // ==============================================================
+    // INITIALIZATION & PWA SERVICE WORKER
+    // ==============================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Register PWA Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg fail:', err));
+      }
+
+      // Check Saved Session
+      const savedAdmin = localStorage.getItem('wastebank_admin_logged');
+      const savedAdminName = localStorage.getItem('wastebank_admin_name');
+      if (savedAdmin === 'true' && savedAdminName) {
+        setAdminMode(true, savedAdminName);
+      } else {
+        setAdminMode(false);
+      }
+
+      // Initial Data Fetch
+      loadInitialData();
+
+      // Set default report date filters
+      setDefaultReportDates();
+    });
+
+    function showSpinner(text = 'กำลังประมวลผล...') {
+      const el = document.getElementById('global-spinner');
+      document.getElementById('spinner-text').innerText = text;
+      el.style.display = 'flex';
+    }
+
+    function hideSpinner() {
+      document.getElementById('global-spinner').style.display = 'none';
+    }
+
+    function showToast(icon, title) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: icon,
+        title: title,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+    }
+
+    // ==============================================================
+    // AUTHENTICATION & ROLE SWITCHING (Guest vs Admin PIN 8055)
+    // ==============================================================
+    let authModalInstance = null;
+
+    function toggleAuthModal() {
+      if (appState.isAdmin) {
+        // Logout
+        Swal.fire({
+          title: 'ออกจากระบบ?',
+          text: 'ต้องการกลับสู่โหมดผู้ใช้งานทั่วไป (Guest) ใช่หรือไม่?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#2D6A4F',
+          cancelButtonColor: '#6B7280',
+          confirmButtonText: 'ยืนยันออกจากระบบ',
+          cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            setAdminMode(false);
+            showToast('info', 'ออกจากระบบเรียบร้อยแล้ว');
+            switchSection('home');
+          }
+        });
+      } else {
+        // Open Login Modal
+        const modalEl = document.getElementById('adminAuthModal');
+        if (!authModalInstance) authModalInstance = new bootstrap.Modal(modalEl);
+        document.getElementById('modal-admin-pin').value = '';
+        authModalInstance.show();
+        setTimeout(() => document.getElementById('modal-admin-pin').focus(), 400);
+      }
+    }
+
+    function setAdminMode(isAdmin, name = '') {
+      appState.isAdmin = isAdmin;
+      appState.adminName = name;
+
+      const userBadge = document.getElementById('user-name-display');
+      const roleDot = document.getElementById('role-dot');
+      const authBtn = document.getElementById('btn-header-auth');
+      const adminNotice = document.getElementById('home-admin-notice');
+      const adminTabDeposit = document.getElementById('tab-deposit');
+      const adminTabWithdraw = document.getElementById('tab-withdraw');
+      const adminTabReport = document.getElementById('tab-report');
+      const adminOnlyElements = document.querySelectorAll('.admin-only');
+
+      if (isAdmin) {
+        localStorage.setItem('wastebank_admin_logged', 'true');
+        localStorage.setItem('wastebank_admin_name', name);
+        userBadge.innerText = name;
+        roleDot.innerText = '👑';
+        authBtn.innerText = '🚪 ออกจากระบบ';
+        authBtn.classList.replace('btn-eco-primary', 'btn-eco-secondary');
+        adminNotice.classList.remove('d-none');
+
+        adminTabDeposit.classList.remove('d-none');
+        adminTabWithdraw.classList.remove('d-none');
+        adminTabReport.classList.remove('d-none');
+        adminOnlyElements.forEach(el => el.classList.remove('d-none'));
+
+        document.getElementById('dep-admin-label').innerText = name;
+        document.getElementById('wit-admin-label').innerText = name;
+      } else {
+        localStorage.removeItem('wastebank_admin_logged');
+        localStorage.removeItem('wastebank_admin_name');
+        userBadge.innerText = 'ผู้ใช้งานทั่วไป (Guest)';
+        roleDot.innerText = '🟢';
+        authBtn.innerText = '🔐 เข้าสู่ระบบ Admin';
+        authBtn.classList.replace('btn-eco-secondary', 'btn-eco-primary');
+        adminNotice.classList.add('d-none');
+
+        adminTabDeposit.classList.add('d-none');
+        adminTabWithdraw.classList.add('d-none');
+        adminTabReport.classList.add('d-none');
+        adminOnlyElements.forEach(el => el.classList.add('d-none'));
+      }
+    }
+
+    function checkModalPinAuto(val) {
+      if (val && val.length === 4) {
+        submitAdminLogin();
+      }
+    }
+
+    function pressModalNumpad(key) {
+      const pinInput = document.getElementById('modal-admin-pin');
+      if (key === 'C') {
+        pinInput.value = '';
+      } else if (key === 'OK') {
+        submitAdminLogin();
+      } else {
+        if (pinInput.value.length < 4) {
+          pinInput.value += key;
+          if (pinInput.value.length === 4) {
+            submitAdminLogin();
+          }
+        }
+      }
+    }
+
+    function submitAdminLogin() {
+      const pin = document.getElementById('modal-admin-pin').value.trim();
+      if (pin.length !== 4) {
+        showToast('warning', 'กรุณาระบุรหัส PIN 4 หลัก');
+        return;
+      }
+
+      showSpinner('กำลังตรวจสอบสิทธิ์...');
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          hideSpinner();
+          if (res && res.valid) {
+            playBeep('success');
+            setAdminMode(true, res.name || 'ผู้ดูแลระบบ');
+            if (authModalInstance) authModalInstance.hide();
+            Swal.fire({
+              icon: 'success',
+              title: 'เข้าสู่ระบบสำเร็จ',
+              text: 'ยินดีต้อนรับ ' + (res.name || 'Admin'),
+              confirmButtonColor: '#2D6A4F',
+              timer: 1800
+            });
+            switchSection('home');
+          } else {
+            playBeep('error');
+            Swal.fire({
+              icon: 'error',
+              title: 'รหัส PIN ไม่ถูกต้อง',
+              text: 'กรุณาตรวจสอบรหัส PIN อีกครั้ง (รหัสเริ่มต้น: 8055)',
+              confirmButtonColor: '#2D6A4F'
+            });
+            document.getElementById('modal-admin-pin').value = '';
+            document.getElementById('modal-admin-pin').focus();
+          }
+        })
+        .withFailureHandler((err) => {
+          hideSpinner();
+          showToast('error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        })
+        .checkAdminPin(pin);
+    }
+
+    // ==============================================================
+    // NAVIGATION & SECTIONS
+    // ==============================================================
+    function switchSection(sectionName) {
+      // Check auth if trying to access admin section
+      if (['deposit', 'withdraw', 'report'].includes(sectionName) && !appState.isAdmin) {
+        toggleAuthModal();
+        return;
+      }
+
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(el => el.classList.add('d-none'));
+
+      // Remove active class from tabs
+      document.querySelectorAll('.modern-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      // Show selected section
+      const targetSec = document.getElementById('section-' + sectionName);
+      if (targetSec) targetSec.classList.remove('d-none');
+
+      // Highlight tab
+      const targetTab = document.getElementById('tab-' + sectionName);
+      if (targetTab) targetTab.classList.add('active');
+
+      // Specific section lazy load
+      if (sectionName === 'prices') loadPrices();
+      if (sectionName === 'stats') loadStatsAndLeaderboard();
+      if (sectionName === 'passbook') {
+        setTimeout(() => document.getElementById('passbook-student-id').focus(), 200);
+      }
+      if (sectionName === 'deposit') {
+        setTimeout(() => document.getElementById('dep-student-id').focus(), 200);
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==============================================================
+    // PASSBOOK (GUEST MODE - STUDENT BALANCE & HISTORY)
+    // ==============================================================
+    function handlePassbookInput(val) {
+      if (val && val.length === 4) {
+        searchPassbook();
+      }
+    }
+
+    function pressNumpad(key) {
+      const input = document.getElementById('passbook-student-id');
+      if (key === 'C') {
+        input.value = '';
+      } else if (key === 'OK') {
+        searchPassbook();
+      } else {
+        if (input.value.length < 4) {
+          input.value += key;
+          if (input.value.length === 4) searchPassbook();
+        }
+      }
+    }
+
+    function searchPassbook() {
+      const sid = document.getElementById('passbook-student-id').value.trim();
+      if (sid.length !== 4) {
+        showToast('warning', 'กรุณาระบุรหัสนักเรียน 4 หลัก');
+        return;
+      }
+
+      showSpinner('กำลังค้นหาข้อมูล...');
+
+      // Lookup student info and history
+      google.script.run
+        .withSuccessHandler((res) => {
+          if (res && res.found) {
+            playBeep('success');
+            document.getElementById('passbook-result').classList.remove('d-none');
+            document.getElementById('passbook-badge-id').innerText = res.studentId || sid;
+            document.getElementById('passbook-badge-class').innerText = res.className || 'ไม่ระบุ';
+            document.getElementById('passbook-student-name').innerText = res.name;
+            document.getElementById('passbook-balance').innerText = (res.balance || 0).toLocaleString('th-TH');
+
+            // Load student history
+            fetchStudentHistory(sid);
+          } else {
+            hideSpinner();
+            playBeep('error');
+            document.getElementById('passbook-result').classList.add('d-none');
+            Swal.fire({
+              icon: 'info',
+              title: 'ไม่พบข้อมูลนักเรียน',
+              text: 'ไม่พบรหัส ' + sid + ' ในระบบ กรุณาติดต่อคุณครูหรือผู้ดูแลธนาคารขยะเพื่อลงทะเบียน',
+              confirmButtonColor: '#2D6A4F'
+            });
+          }
+        })
+        .withFailureHandler(() => {
+          hideSpinner();
+          showToast('error', 'ค้นหาไม่สำเร็จ กรุณาลองใหม่');
+        })
+        .getStudentInfo(sid);
+    }
+
+    function fetchStudentHistory(sid) {
+      const tbody = document.getElementById('passbook-history-body');
+      tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-muted">กำลังโหลดประวัติ...</td></tr>';
+
+      google.script.run
+        .withSuccessHandler((history) => {
+          hideSpinner();
+          tbody.innerHTML = '';
+          const countBadge = document.getElementById('passbook-history-count');
+          countBadge.innerText = (history ? history.length : 0) + ' รายการ';
+
+          if (!history || history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-muted">ยังไม่มีประวัติการทำรายการ</td></tr>';
+            return;
+          }
+
+          history.forEach(item => {
+            const isDeposit = item.type === 'ฝาก';
+            const badgeClass = isDeposit ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger';
+            const sign = isDeposit ? '+' : '';
+            const pointsClass = isDeposit ? 'text-success fw-bold' : 'text-danger fw-bold';
+
+            tbody.innerHTML += `
+              <tr>
+                <td style="font-size:12px;">${item.date}</td>
+                <td><span class="badge ${badgeClass}">${item.type}</span></td>
+                <td>${item.material}</td>
+                <td>${item.weight !== '-' ? item.weight : '-'}</td>
+                <td class="${pointsClass}">${sign}${item.amount}</td>
+              </tr>
+            `;
+          });
+        })
+        .withFailureHandler(() => {
+          hideSpinner();
+          tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-danger">โหลดประวัติไม่สำเร็จ</td></tr>';
+        })
+        .getStudentHistory(sid);
+    }
+
+    // ==============================================================
+    // PRICES & RECYCLABLE RATES
+    // ==============================================================
+    function loadPrices(force = false) {
+      if (appState.prices.length > 0 && !force) {
+        renderPrices(appState.prices);
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          if (Array.isArray(res)) {
+            appState.prices = res;
+            renderPrices(res);
+            populateMaterialSelect(res);
+          }
+        })
+        .withFailureHandler(() => {
+          showToast('error', 'โหลดราคาไม่สำเร็จ');
+        })
+        .getPrices();
+    }
+
+    function getMaterialIcon(name) {
+      if (name.includes('พลาสติกใส') || name.includes('PET')) return '🥤';
+      if (name.includes('พลาสติกขุ่น') || name.includes('HDPE')) return '🧴';
+      if (name.includes('กระป๋อง') || name.includes('อลูมิเนียม')) return '🥫';
+      if (name.includes('ลัง') || name.includes('กล่อง')) return '📦';
+      if (name.includes('กระดาษ') || name.includes('สมุด')) return '📄';
+      if (name.includes('แก้วน้ำ')) return '🧋';
+      if (name.includes('ขวดแก้ว')) return '🍾';
+      return '♻️';
+    }
+
+    function renderPrices(prices) {
+      const container = document.getElementById('prices-grid');
+      container.innerHTML = '';
+      if (!prices || prices.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center py-4 text-muted">ยังไม่มีรายการราคา</div>';
+        return;
+      }
+
+      prices.forEach(p => {
+        const icon = getMaterialIcon(p.name);
+        container.innerHTML += `
+          <div class="col-6 col-md-4">
+            <div class="glass-card text-center p-3 h-100" style="border: 1px solid rgba(82, 183, 136, 0.4);">
+              <div style="font-size: 2.2rem;" class="mb-1">${icon}</div>
+              <h6 class="fw-bold mb-1">${p.name}</h6>
+              <div class="fs-4 fw-bold text-success">${p.price}</div>
+              <div class="small text-muted">คะแนน / หน่วย</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function populateMaterialSelect(prices) {
+      const sel = document.getElementById('dep-material-select');
+      sel.innerHTML = '';
+      prices.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.dataset.price = p.price;
+        opt.text = `${p.name} (${p.price} คะแนน/หน่วย)`;
+        sel.appendChild(opt);
+      });
+      updateDepositUnitPrice();
+    }
+
+    function updateDepositUnitPrice() {
+      const sel = document.getElementById('dep-material-select');
+      const selected = sel.options[sel.selectedIndex];
+      if (selected) {
+        document.getElementById('dep-unit-price-label').innerText = selected.dataset.price || '0';
+      }
+    }
+
+    // ==============================================================
+    // STATISTICS & LEADERBOARD
+    // ==============================================================
+    function loadStatsAndLeaderboard() {
+      google.script.run
+        .withSuccessHandler((stats) => {
+          renderStatsBars(stats);
+        })
+        .getStatistics();
+
+      google.script.run
+        .withSuccessHandler((leaders) => {
+          renderLeaderboard(leaders);
+        })
+        .getLeaderboard();
+    }
+
+    function renderStatsBars(stats) {
+      const container = document.getElementById('stats-bars-container');
+      container.innerHTML = '';
+      if (!stats || stats.length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-muted">ยังไม่มีข้อมูลสถิติ</div>';
+        return;
+      }
+
+      const maxWeight = Math.max(...stats.map(s => s.weight || 1));
+
+      stats.forEach((s, idx) => {
+        const icon = getMaterialIcon(s.material);
+        const percent = Math.min(100, Math.round((s.weight / maxWeight) * 100));
+        container.innerHTML += `
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold small">${idx + 1}. ${icon} ${s.material}</span>
+              <span class="badge bg-success">${s.weight.toLocaleString('th-TH')} ชิ้น/กก.</span>
+            </div>
+            <div class="progress" style="height: 10px; border-radius: 10px; background: rgba(0,0,0,0.06);">
+              <div class="progress-bar bg-success" role="progressbar" style="width: ${percent}%; border-radius: 10px;"></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderLeaderboard(leaders) {
+      const container = document.getElementById('leaderboard-container');
+      container.innerHTML = '';
+      if (!leaders || leaders.length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-muted">ยังไม่มีข้อมูลคะแนน</div>';
+        return;
+      }
+
+      const medals = ['🥇', '🥈', '🥉'];
+
+      leaders.forEach((u, i) => {
+        const medal = medals[i] || (i + 1) + '.';
+        container.innerHTML += `
+          <div class="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3" style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.04);">
+            <div class="d-flex align-items-center gap-2">
+              <span class="fs-5 fw-bold" style="width: 28px; text-align: center;">${medal}</span>
+              <div>
+                <div class="fw-bold small">${u.name}</div>
+                <div class="text-muted" style="font-size: 11px;">รหัส ${u.studentId} • ชั้น ${u.className}</div>
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="fw-bold text-success">${(u.balance || 0).toLocaleString('th-TH')}</span>
+              <div class="text-muted" style="font-size: 10px;">คะแนน</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // ==============================================================
+    // ADMIN: DEPOSIT (ฝากขยะ)
+    // ==============================================================
+    function checkAutoLookup(mode) {
+      const val = document.getElementById(mode + '-student-id').value.trim();
+      if (val.length === 4) {
+        lookupStudent(mode);
+      } else {
+        document.getElementById(mode + '-student-name').value = '';
+        document.getElementById(mode + '-student-class').value = '';
+        if (mode === 'wit') document.getElementById('wit-balance-display').innerText = '-';
+      }
+    }
+
+    function lookupStudent(mode) {
+      const sid = document.getElementById(mode + '-student-id').value.trim();
+      if (sid.length !== 4) return;
+
+      if (appState.studentCache[sid]) {
+        applyStudentInfo(mode, appState.studentCache[sid]);
+        return;
+      }
+
+      document.getElementById(mode + '-student-name').value = 'กำลังค้นหา...';
+
+      google.script.run
+        .withSuccessHandler((res) => {
+          if (res && res.found) {
+            appState.studentCache[sid] = res;
+            applyStudentInfo(mode, res);
+          } else {
+            document.getElementById(mode + '-student-name').value = 'ไม่พบข้อมูล';
+            document.getElementById(mode + '-student-class').value = '-';
+            if (mode === 'wit') document.getElementById('wit-balance-display').innerText = '0';
+            showToast('warning', 'ไม่พบรหัสนักเรียน ' + sid);
+          }
+        })
+        .withFailureHandler(() => {
+          document.getElementById(mode + '-student-name').value = 'ค้นหาล้มเหลว';
+        })
+        .getStudentInfo(sid);
+    }
+
+    function applyStudentInfo(mode, data) {
+      document.getElementById(mode + '-student-name').value = data.name;
+      document.getElementById(mode + '-student-class').value = data.className;
+      if (mode === 'dep') {
+        appState.selectedStudentDep = data;
+      } else if (mode === 'wit') {
+        appState.selectedStudentWit = data;
+        document.getElementById('wit-balance-display').innerText = (data.balance || 0).toLocaleString('th-TH');
+      }
+    }
+
+    function addItemToCart() {
+      const sel = document.getElementById('dep-material-select');
+      const matName = sel.value;
+      const price = parseFloat(sel.options[sel.selectedIndex]?.dataset.price || 0);
+      const weight = parseFloat(document.getElementById('dep-weight-input').value);
+
+      if (!weight || weight <= 0) {
+        showToast('warning', 'กรุณาระบุจำนวนหรือน้ำหนักให้ถูกต้อง');
+        return;
+      }
+
+      const amount = Math.round(weight * price * 100) / 100;
+
+      appState.currentCart.push({
+        material: matName,
+        weight: weight,
+        price: price,
+        amount: amount
+      });
+
+      renderCart();
+      document.getElementById('dep-weight-input').value = '';
+      document.getElementById('dep-weight-input').focus();
+    }
+
+    function removeItemFromCart(index) {
+      appState.currentCart.splice(index, 1);
+      renderCart();
+    }
+
+    function renderCart() {
+      const tbody = document.getElementById('cart-body');
+      tbody.innerHTML = '';
+      let total = 0;
+
+      if (appState.currentCart.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-3 text-muted">ยังไม่มีรายการในบิล</td></tr>';
+        document.getElementById('cart-total-points').innerText = '0';
+        return;
+      }
+
+      appState.currentCart.forEach((item, idx) => {
+        total += item.amount;
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.material}</td>
+            <td>${item.weight}</td>
+            <td class="fw-bold text-success">${item.amount}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger py-0 px-2 rounded-circle" onclick="removeItemFromCart(${idx})">×</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('cart-total-points').innerText = total.toLocaleString('th-TH');
+    }
+
+    function confirmSubmitDeposit() {
+      const sid = document.getElementById('dep-student-id').value.trim();
+      const sname = document.getElementById('dep-student-name').value.trim();
+      const sclass = document.getElementById('dep-student-class').value.trim();
+
+      if (sid.length !== 4) return showToast('warning', 'กรุณากรอกรหัสนักเรียน 4 หลัก');
+      if (!sname || sname === 'กำลังค้นหา...' || sname === 'ไม่พบข้อมูล') {
+        return showToast('warning', 'กรุณาระบุข้อมูลนักเรียนให้ถูกต้อง');
+      }
+      if (appState.currentCart.length === 0) {
+        return showToast('warning', 'กรุณาเพิ่มรายการขยะอย่างน้อย 1 รายการ');
+      }
+
+      const total = appState.currentCart.reduce((sum, item) => sum + item.amount, 0);
+
+      Swal.fire({
+        title: 'ยืนยันการฝากขยะ?',
+        html: `
+          <div>นักเรียน: <strong>${sname}</strong> (${sclass})</div>
+          <div>จำนวนรายการ: <strong>${appState.currentCart.length}</strong> รายการ</div>
+          <div class="fs-4 fw-bold text-success mt-2">ยอดคะแนนรวม: ${total} คะแนน</div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2D6A4F',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'ยืนยันบันทึก',
+        cancelButtonText: 'แก้ไข'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          submitDepositAction(sid, sname, sclass);
+        }
+      });
+    }
+
+    function submitDepositAction(sid, sname, sclass) {
+      showSpinner('กำลังบันทึกข้อมูลการฝาก...');
+
+      google.script.run
+        .withSuccessHandler((msg) => {
+          hideSpinner();
+          playBeep('success');
+          Swal.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ!',
+            text: msg,
+            confirmButtonColor: '#2D6A4F'
+          });
+
+          // Reset Form
+          appState.currentCart = [];
+          renderCart();
+          document.getElementById('dep-student-id').value = '';
+          document.getElementById('dep-student-name').value = '';
+          document.getElementById('dep-student-class').value = '';
+          delete appState.studentCache[sid]; // Invalidate cache
+        })
+        .withFailureHandler(() => {
+          hideSpinner();
+          showToast('error', 'บันทึกล้มเหลว กรุณาลองใหม่');
+        })
+        .saveDeposit(appState.adminName, sid, sname, sclass, appState.currentCart);
+    }
+
+    // ==============================================================
+    // ADMIN: WITHDRAW / REDEEM (แลกคะแนน)
+    // ==============================================================
+    function setQuickWithdraw(amt) {
+      document.getElementById('wit-amount-input').value = amt;
+    }
+
+    function setWithdrawAll() {
+      if (appState.selectedStudentWit && appState.selectedStudentWit.balance) {
+        document.getElementById('wit-amount-input').value = appState.selectedStudentWit.balance;
+      }
+    }
+
+    function confirmSubmitWithdraw() {
+      const sid = document.getElementById('wit-student-id').value.trim();
+      const sname = document.getElementById('wit-student-name').value.trim();
+      const sclass = document.getElementById('wit-student-class').value.trim();
+      const amount = parseFloat(document.getElementById('wit-amount-input').value);
+
+      if (sid.length !== 4) return showToast('warning', 'กรุณาระบุรหัสนักเรียน 4 หลัก');
+      if (!sname || sname === 'ไม่พบข้อมูล' || sname === 'กำลังค้นหา...') {
+        return showToast('warning', 'กรุณาระบุข้อมูลนักเรียนให้ถูกต้อง');
+      }
+      if (isNaN(amount) || amount <= 0) {
+        return showToast('warning', 'กรุณาระบุจำนวนคะแนนที่ต้องการแลก');
+      }
+
+      const currentBal = appState.selectedStudentWit ? appState.selectedStudentWit.balance : 0;
+      if (amount > currentBal) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'คะแนนคงเหลือไม่พอ',
+          text: `นักเรียนมีคะแนนสะสม ${currentBal} คะแนน ไม่สามารถแลก ${amount} คะแนนได้`,
+          confirmButtonColor: '#2D6A4F'
+        });
+      }
+
+      Swal.fire({
+        title: 'ยืนยันการแลกคะแนน?',
+        html: `
+          <div>นักเรียน: <strong>${sname}</strong> (${sclass})</div>
+          <div>คะแนนสะสมเดิม: <strong>${currentBal}</strong> คะแนน</div>
+          <div class="fs-4 fw-bold text-danger mt-2">ต้องการแลก: ${amount} คะแนน</div>
+          <div class="small text-muted mt-1">คงเหลือหลังแลก: ${currentBal - amount} คะแนน</div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#E63946',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'ยืนยันการแลก',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          submitWithdrawAction(sid, sname, sclass, amount);
+        }
+      });
+    }
+
+    function submitWithdrawAction(sid, sname, sclass, amount) {
+      showSpinner('กำลังทำรายการแลกคะแนน...');
+
+      google.script.run
+        .withSuccessHandler((msg) => {
+          hideSpinner();
+          playBeep('success');
+          Swal.fire({
+            icon: 'success',
+            title: 'แลกคะแนนสำเร็จ!',
+            text: msg,
+            confirmButtonColor: '#2D6A4F'
+          });
+
+          // Reset Form
+          document.getElementById('wit-student-id').value = '';
+          document.getElementById('wit-student-name').value = '';
+          document.getElementById('wit-student-class').value = '';
+          document.getElementById('wit-amount-input').value = '';
+          document.getElementById('wit-balance-display').innerText = '-';
+          delete appState.studentCache[sid];
+          appState.selectedStudentWit = null;
+        })
+        .withFailureHandler(() => {
+          hideSpinner();
+          showToast('error', 'แลกคะแนนล้มเหลว กรุณาลองใหม่');
+        })
+        .withdrawMoney(appState.adminName, sid, sname, sclass, amount);
+    }
+
+    // ==============================================================
+    // THAI BUDDHIST ERA DATE STANDARDS & REPORTS (Rules 2, 3, 4)
+    // ==============================================================
+    function openNativeDatePicker(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        if (typeof el.showPicker === 'function') {
+          try { el.showPicker(); return; } catch (e) {}
+        }
+        el.focus();
+        el.click();
+      }
+    }
+
+    function onThaiDatePicked(rawId, displayId) {
+      const rawEl = document.getElementById(rawId);
+      const displayEl = document.getElementById(displayId);
+      if (!rawEl || !displayEl) return;
+      const val = rawEl.value; // YYYY-MM-DD
+      if (!val) {
+        displayEl.value = '';
+        return;
+      }
+      const parts = val.split('-');
+      if (parts.length === 3) {
+        let y = parseInt(parts[0], 10);
+        let yBE = y > 2400 ? y : y + 543;
+        let m = parts[1].padStart(2, '0');
+        let d = parts[2].padStart(2, '0');
+        displayEl.value = `${d}/${m}/${yBE}`;
+      }
+    }
+
+    function setDefaultReportDates() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const todayISO = `${y}-${m}-${d}`;
+
+      // Start of month
+      const startOfMonthISO = `${y}-${m}-01`;
+
+      const startRaw = document.getElementById('report-start-raw');
+      const endRaw = document.getElementById('report-end-raw');
+      if (startRaw && endRaw) {
+        startRaw.value = startOfMonthISO;
+        endRaw.value = todayISO;
+        onThaiDatePicked('report-start-raw', 'report-start-display');
+        onThaiDatePicked('report-end-raw', 'report-end-display');
+      }
+    }
+
+    function setReportDateRange(type) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const d = now.getDate();
+      let startDt, endDt;
+
+      if (type === 'today') {
+        startDt = new Date(y, m, d);
+        endDt = new Date(y, m, d);
+      } else if (type === 'this_week') {
+        const dayOfWeek = now.getDay() || 7;
+        startDt = new Date(y, m, d - dayOfWeek + 1);
+        endDt = new Date(y, m, d);
+      } else if (type === 'this_month') {
+        startDt = new Date(y, m, 1);
+        endDt = new Date(y, m, d);
+      } else if (type === 'all') {
+        startDt = new Date(2020, 0, 1);
+        endDt = new Date(y, m, d);
+      }
+
+      function toISO(dt) {
+        return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      }
+
+      document.getElementById('report-start-raw').value = toISO(startDt);
+      document.getElementById('report-end-raw').value = toISO(endDt);
+      onThaiDatePicked('report-start-raw', 'report-start-display');
+      onThaiDatePicked('report-end-raw', 'report-end-display');
+    }
+
+    function fetchReportData() {
+      const startDisplay = document.getElementById('report-start-display').value;
+      const endDisplay = document.getElementById('report-end-display').value;
+      const startRaw = document.getElementById('report-start-raw').value;
+      const endRaw = document.getElementById('report-end-raw').value;
+
+      if (!startRaw || !endRaw) {
+        return showToast('warning', 'กรุณาระบุช่วงวันที่ต้องการดูรายงาน');
+      }
+
+      showSpinner('กำลังสร้างรายงาน...');
+
+      google.script.run
+        .withSuccessHandler((rows) => {
+          hideSpinner();
+          document.getElementById('report-output-card').classList.remove('d-none');
+          document.getElementById('report-period-text').innerText = `ระหว่างวันที่ ${startDisplay} ถึง ${endDisplay}`;
+
+          const tbody = document.getElementById('report-table-body');
+          tbody.innerHTML = '';
+
+          let sumDep = 0;
+          let sumWit = 0;
+
+          if (!rows || rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-muted">ไม่พบรายการในช่วงวันที่ระบุ</td></tr>';
+            document.getElementById('rep-sum-deposit').innerText = '0';
+            document.getElementById('rep-sum-withdraw').innerText = '0';
+            document.getElementById('rep-sum-net').innerText = '0';
+            return;
+          }
+
+          rows.forEach(r => {
+            const isDep = r.type === 'ฝาก';
+            const badgeClass = isDep ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger';
+            const pointsClass = isDep ? 'text-success fw-bold' : 'text-danger fw-bold';
+            const amt = Math.abs(parseFloat(r.amount) || 0);
+
+            if (isDep) sumDep += amt;
+            else sumWit += amt;
+
+            tbody.innerHTML += `
+              <tr>
+                <td style="font-size:12px;">${r.date}</td>
+                <td>${r.admin}</td>
+                <td>${r.studentId}</td>
+                <td class="text-start">${r.studentName} <small class="text-muted">(${r.studentClass})</small></td>
+                <td><span class="badge ${badgeClass}">${r.type}</span></td>
+                <td>${r.material}</td>
+                <td>${r.weight !== '-' ? r.weight : '-'}</td>
+                <td class="${pointsClass}">${isDep ? '+' : '-'}${amt}</td>
+              </tr>
+            `;
+          });
+
+          document.getElementById('rep-sum-deposit').innerText = sumDep.toLocaleString('th-TH');
+          document.getElementById('rep-sum-withdraw').innerText = sumWit.toLocaleString('th-TH');
+          const net = sumDep - sumWit;
+          const netEl = document.getElementById('rep-sum-net');
+          netEl.innerText = (net >= 0 ? '+' : '') + net.toLocaleString('th-TH');
+          netEl.className = net >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+        })
+        .withFailureHandler(() => {
+          hideSpinner();
+          showToast('error', 'สร้างรายงานไม่สำเร็จ');
+        })
+        .getReport(startRaw, endRaw);
+    }
+
+    // ==============================================================
+    // INITIAL DATA & SETTINGS MODAL
+    // ==============================================================
+    function loadInitialData() {
+      google.script.run
+        .withSuccessHandler((overview) => {
+          if (overview) {
+            if (overview.prices) {
+              appState.prices = overview.prices;
+              renderPrices(overview.prices);
+              populateMaterialSelect(overview.prices);
+            }
+            if (overview.stats) renderStatsBars(overview.stats);
+            if (overview.leaderboard) renderLeaderboard(overview.leaderboard);
+          }
+        })
+        .withFailureHandler(() => {
+          loadPrices();
+        })
+        .getSystemOverview();
+    }
+
+    function openGasConfigModal() {
+      document.getElementById('setting-gas-url').value = activeGasUrl;
+      const modal = new bootstrap.Modal(document.getElementById('gasConfigModal'));
+      modal.show();
+    }
+
+    function saveGasUrlConfig() {
+      const url = document.getElementById('setting-gas-url').value.trim();
+      if (!url) {
+        showToast('warning', 'กรุณาระบุ URL ให้ถูกต้อง');
+        return;
+      }
+      activeGasUrl = url;
+      localStorage.setItem('wastebank_gas_url', url);
+      showToast('success', 'บันทึก URL เชื่อมต่อเรียบร้อยแล้ว');
+      bootstrap.Modal.getInstance(document.getElementById('gasConfigModal'))?.hide();
+      loadInitialData();
+    }
+  </script>
+</body>
+</html>
