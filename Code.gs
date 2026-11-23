@@ -196,6 +196,43 @@ function getPrices() {
 }
 
 // -------------------------------------------------------------
+// 2.1 เพิ่มหรือแก้ไขประเภทขยะและอัตราคะแนน
+// -------------------------------------------------------------
+function addPrice(name, price) {
+  try {
+    if (!name || name.toString().trim() === '') {
+      return { success: false, message: 'กรุณากรอกชื่อประเภทขยะ' };
+    }
+    var wasteName = name.toString().trim();
+    var wastePrice = parseFloat(price);
+    if (isNaN(wastePrice) || wastePrice < 0) {
+      return { success: false, message: 'กรุณาระบุอัตราคะแนนเป็นตัวเลขที่ถูกต้อง' };
+    }
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Prices');
+    if (!sheet) {
+      initSheetsIfNeeded();
+      sheet = ss.getSheetByName('Prices');
+    }
+
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString().trim().toLowerCase() === wasteName.toLowerCase()) {
+        sheet.getRange(i + 1, 2).setValue(wastePrice);
+        return { success: true, message: 'อัปเดตราคา "' + wasteName + '" เป็น ' + wastePrice + ' คะแนน เรียบร้อยแล้ว', isUpdate: true };
+      }
+    }
+
+    sheet.appendRow([wasteName, wastePrice]);
+    return { success: true, message: 'เพิ่มประเภทขยะ "' + wasteName + '" อัตรา ' + wastePrice + ' คะแนน เรียบร้อยแล้ว', isUpdate: false };
+  } catch (err) {
+    console.error('addPrice error:', err);
+    return { success: false, message: 'เกิดข้อผิดพลาด: ' + err.toString() };
+  }
+}
+
+// -------------------------------------------------------------
 // 3. ค้นหาข้อมูลนักเรียนจากรหัส 4 หลัก
 // -------------------------------------------------------------
 function getStudentInfo(studentId) {
